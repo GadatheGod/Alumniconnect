@@ -793,6 +793,27 @@ grep "ERROR" logs/django.log
 
 ## License
 
+This project is licensed under the [MIT License](LICENSE).
+
+### Dependent Package Licenses
+
+This project uses several third-party packages, each with their own licenses:
+
+| Package | License |
+|---------|---------|
+| Django, Django Channels, Django REST Framework | BSD License |
+| Bootstrap 5 | MIT License |
+| Font Awesome | SIL OFL 1.1 License |
+| Pillow | HPND License |
+| Redis, Gunicorn, Daphne | BSD/MIT License |
+| Requests | Apache License 2.0 |
+| certifi | MPL 2.0 |
+| jQuery, Select2 | MIT License |
+
+For a complete list of all dependent packages and their licenses, please refer to the [LICENSE](LICENSE) file.
+
+**Note:** All licenses are permissive and allow commercial use, modification, and distribution. You are not required to open-source your entire project. See the LICENSE file for details.
+
 ## Support
 
 For issues, questions, or contributions, please open an issue on GitHub.
