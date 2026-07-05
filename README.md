@@ -6,13 +6,34 @@ A Django-based alumni networking platform for connecting graduates, managing eve
 
 ## Features
 
-- **Alumni Directory** - Browse and search alumni by department, year, name, or company
-- **Secure Authentication** - OTP-based login and registration system
-- **Profile Management** - Users can create and manage their professional profiles
-- **Events Management** - Create and RSVP to alumni events, reunions, webinars
-- **Job Board** - Post and browse job opportunities
-- **Real-time Chat** - Direct messaging and group chats via WebSocket
-- **Responsive Design** - Works on desktop and mobile devices
+### Currently Deployed (Live on Production)
+
+- **Alumni Directory** - Browse and search alumni by department, year, name, or company ✅
+- **Secure Authentication** - OTP-based login and registration system ✅
+- **Profile Management** - Users can create and manage their professional profiles ✅
+- **Responsive Design** - Works on desktop and mobile devices ✅
+
+### Available in Repository (Not Yet Deployed)
+
+- **Events Management** - Create and RSVP to alumni events, reunions, webinars 📦
+- **Job Board** - Post and browse job opportunities 📦
+- **Real-time Chat** - Direct messaging and group chats via WebSocket 📦
+
+> **Note:** The live demo at https://pcetconnect.pythonanywhere.com/ currently only includes the Alumni Directory, Authentication, and Profile Management features. Events, Job Board, and Real-time Chat are fully coded and ready to use but require additional configuration (Redis, WebSocket setup) to deploy.
+
+## Deployment Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Alumni Directory | ✅ Deployed | Live on production, fully functional |
+| Authentication (OTP) | ✅ Deployed | Live on production, secure OTP-based login |
+| Profile Management | ✅ Deployed | Live on production, photo upload supported |
+| Events Management | 📦 In Code | Available in repository, not deployed |
+| Job Board | 📦 In Code | Available in repository, not deployed |
+| Real-time Chat | 📦 In Code | Requires Redis + WebSocket setup |
+| Responsive Design | ✅ Deployed | Mobile-friendly Bootstrap 5 interface |
+
+## Tech Stack
 
 ## Tech Stack
 
@@ -197,6 +218,169 @@ python manage.py createsuperuser
 **Step 9: Reload**
 - Click the red "Reload" button in PythonAnywhere Web tab
 
+### Option 1B: PythonAnywhere with WebSocket Support (For Chat Feature)
+
+If you want to enable the **Real-time Chat** feature, follow these additional steps:
+
+**Step 1: Install Redis on PythonAnywhere**
+- Upgrade to a paid PythonAnywhere plan (Redis is available on paid plans)
+- Or use a free Redis service like [Redis Labs](https://redis.com/redis-enterprise-cloud/)
+
+**Step 2: Install Channels and Redis packages**
+```bash
+pip install channels channels_redis daphne
+```
+
+**Step 3: Update `alumni_project/settings.py`**
+Add these to INSTALLED_APPS:
+```python
+INSTALLED_APPS = [
+    # ... existing apps ...
+    'channels',
+    'alumni',
+    'events',
+    'jobs',
+    'chat',
+]
+```
+
+Add this to the end of `settings.py`:
+```python
+# Channels configuration
+ASGI_APPLICATION = 'alumni_project.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379/1')],
+        },
+    },
+}
+```
+
+**Step 4: Configure Daphne (ASGI server for WebSocket)**
+Create `alumni_project/asgi.py` (if not exists):
+```python
+import os
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import chat.routing
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'alumni_project.settings')
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            chat.routing.websocket_urlpatterns
+        )
+    ),
+})
+```
+
+**Step 5: Update WSGI configuration**
+In PythonAnywhere Web tab, edit WSGI configuration file:
+```python
+import os
+import sys
+
+path = '/home/yourusername/Alumniconnect'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'alumni_project.settings'
+os.environ['SECRET_KEY'] = 'your-production-secret-key'
+os.environ['DEBUG'] = 'False'
+os.environ['ALLOWED_HOSTS'] = 'yourusername.pythonanywhere.com'
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+```
+
+**Step 6: Add URL routes for Events and Jobs**
+Update `alumni_project/urls.py`:
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('alumni.urls')),  # Alumni views
+    path('events/', include('events.urls')),  # Events views
+    path('jobs/', include('jobs.urls')),  # Job views
+    path('chat/', include('chat.urls')),  # Chat views
+]
+```
+
+**Step 7: Create URL files for each app**
+
+`alumni/urls.py`:
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('register/', views.register, name='register'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('login/', views.login_view, name='login'),
+    path('login/verify-otp/', views.login_verify_otp, name='login_verify_otp'),
+    path('logout/', views.logout_view, name='logout'),
+    path('directory/', views.directory, name='directory'),
+    path('directory/<int:profile_id>/', views.view_profile, name='view_profile'),
+    path('directory/<int:profile_id>/edit/', views.edit_profile, name='edit_profile'),
+]
+```
+
+`events/urls.py`:
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.event_list, name='event_list'),
+    path('create/', views.event_create, name='event_create'),
+    path('<int:event_id>/', views.event_detail, name='event_detail'),
+    path('<int:event_id>/rsvp/', views.event_rsvp, name='event_rsvp'),
+]
+```
+
+`jobs/urls.py`:
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.job_list, name='job_list'),
+    path('create/', views.job_create, name='job_create'),
+    path('<int:job_id>/', views.job_detail, name='job_detail'),
+    path('<int:job_id>/toggle-status/', views.toggle_job_status, name='toggle_job_status'),
+]
+```
+
+`chat/urls.py`:
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.chat_list, name='chat_list'),
+    path('room/<int:room_id>/', views.chat_room, name='chat_room'),
+    path('create-direct/<int:user_id>/', views.create_direct_chat, name='create_direct_chat'),
+    path('create-group/', views.create_group_chat, name='create_group_chat'),
+]
+```
+
+**Step 8: Configure PythonAnywhere for WebSocket**
+- In PythonAnywhere Web tab, set "Startup mode" to "Daphne"
+- Set "Working directory" to `/home/yourusername/Alumniconnect`
+- Set "Entry point" to `alumni_project.asgi:application`
+- Add environment variable: `REDIS_URL=redis://your-redis-url:6379/0`
+
+**Step 9: Reload**
+- Click the red "Reload" button in PythonAnywhere Web tab
+
 ### Option 2: Render.com
 
 **Step 1: Push to GitHub**
@@ -291,6 +475,72 @@ volumes:
 ```bash
 docker-compose up -d
 ```
+
+## Enabling Additional Features
+
+The repository includes code for Events, Job Board, and Real-time Chat, but they are not enabled by default. Here's how to enable each feature:
+
+### Enable Events Management
+
+1. **Add URL routes** - Update `alumni_project/urls.py` (see PythonAnywhere WebSocket setup above)
+2. **Create events/urls.py** - Add event URL patterns
+3. **Run migrations**:
+   ```bash
+   python manage.py makemigrations events
+   python manage.py migrate
+   ```
+4. **Access**: Navigate to `/events/` after deployment
+
+### Enable Job Board
+
+1. **Add URL routes** - Update `alumni_project/urls.py` (see PythonAnywhere WebSocket setup above)
+2. **Create jobs/urls.py** - Add job URL patterns
+3. **Run migrations**:
+   ```bash
+   python manage.py makemigrations jobs
+   python manage.py migrate
+   ```
+4. **Access**: Navigate to `/jobs/` after deployment
+
+### Enable Real-time Chat
+
+**Prerequisites:**
+- Redis server installed and running
+- Paid PythonAnywhere plan (for Redis support)
+- OR use external Redis service (Redis Labs, Upstash, etc.)
+
+**Steps:**
+1. **Install required packages**:
+   ```bash
+   pip install channels channels_redis daphne
+   ```
+
+2. **Update `alumni_project/settings.py`**:
+   - Add `'channels'` to `INSTALLED_APPS`
+   - Add `ASGI_APPLICATION = 'alumni_project.asgi.application'`
+   - Add `CHANNEL_LAYERS` configuration with Redis backend
+
+3. **Create `alumni_project/asgi.py`** (if not exists):
+   - Configure ProtocolTypeRouter with WebSocket support
+   - Reference `chat.routing.websocket_urlpatterns`
+
+4. **Update WSGI/ASGI configuration**:
+   - Use Daphne as ASGI server for WebSocket support
+   - Configure PythonAnywhere to use ASGI startup mode
+
+5. **Add URL routes** - Update `alumni_project/urls.py` and create `chat/urls.py`
+
+6. **Set Redis URL** - Add `REDIS_URL` environment variable
+
+7. **Run migrations**:
+   ```bash
+   python manage.py makemigrations chat
+   python manage.py migrate
+   ```
+
+8. **Access**: Navigate to `/chat/` after deployment
+
+> **Note:** Real-time Chat requires WebSocket support, which needs Redis and an ASGI server (Daphne). Standard WSGI servers (Gunicorn) do not support WebSockets.
 
 ## Environment Variables Reference
 
@@ -408,14 +658,140 @@ SITE_NAME=My Alumni Network
 - Run migrations: `python manage.py migrate`
 - Check database credentials
 
+### Chat WebSocket not connecting
+- Ensure Redis is running and accessible
+- Verify `channels_redis` is installed
+- Check that Daphne is used instead of Gunicorn for WebSocket support
+- Confirm `ASGI_APPLICATION` is set in settings.py
+- Check browser console for WebSocket connection errors
+- Verify `chat.routing.websocket_urlpatterns` is correctly configured
+
+### Jobs/Events pages return 404
+- Ensure URL routes are added to `alumni_project/urls.py`
+- Create app-specific URL files (`jobs/urls.py`, `events/urls.py`)
+- Run migrations: `python manage.py makemigrations` and `python manage.py migrate`
+- Check that views are correctly imported in URL files
+
+## FAQ
+
+### Why doesn't the live demo have chat and job posting?
+The live demo at https://pcetconnect.pythonanywhere.com/ currently only includes the core features: Alumni Directory, Authentication, and Profile Management. The Events, Job Board, and Real-time Chat features are fully coded and tested but require additional infrastructure to deploy:
+- **Real-time Chat** requires Redis server and WebSocket support (Daphne server)
+- **Events and Job Board** require URL routing configuration and database migrations
+
+### How can I enable all features?
+Follow the "Enabling Additional Features" section above. For Events and Job Board, you just need to add URL routes and run migrations. For Real-time Chat, you'll also need Redis and WebSocket configuration.
+
+### What's the difference between WSGI and ASGI?
+- **WSGI** (Web Server Gateway Interface) handles HTTP requests only (used by Gunicorn)
+- **ASGI** (Asynchronous Server Gateway Interface) handles HTTP and WebSocket requests (used by Daphne)
+- For Real-time Chat, you need ASGI with Daphne
+
+### Can I use this for my university/organization?
+Yes! AlumniConnect is fully generic and can be customized for any educational institution or organization. Simply update the `.env` file with your site name, colors, and email settings.
+
+### Is Redis required for chat?
+Yes, Redis is required for Django Channels to manage WebSocket connections. You can use:
+- Local Redis server (install on your machine)
+- PythonAnywhere Redis (paid plans)
+- External Redis services (Redis Labs, Upstash, etc.)
+
+### How do I change the brand colors?
+Edit the `.env` file:
+```env
+SITE_PRIMARY_COLOR=#your-color
+SITE_SECONDARY_COLOR=#your-color
+```
+Or modify `alumni_project/settings.py` directly.
+
 ## Similar Deployed Sites
 
 - [AlumniConnect Demo](https://pcetconnect.pythonanywhere.com/) - PythonAnywhere deployment
 - [AlumniConnect on Render](https://pcet-alumni.onrender.com/) - Render deployment
 
-## License
+## Security Best Practices
 
-MIT License - feel free to use this project for any educational institution or organization.
+### SECRET_KEY Generation
+Generate a secure SECRET_KEY for production:
+```python
+import secrets
+print(secrets.token_urlsafe(50))
+```
+
+### HTTPS Setup
+- Enable HTTPS on your hosting provider
+- Set `SECURE_SSL_REDIRECT = True` in settings.py
+- Update `ALLOWED_HOSTS` with your domain
+- Add `CSRF_TRUSTED_ORIGINS` with your HTTPS domain
+
+### Database Security
+- Use PostgreSQL for production (not SQLite)
+- Set strong database passwords
+- Restrict database user permissions
+- Regular database backups
+
+### Email Security
+- Use Gmail App Passwords (not regular passwords)
+- Store email credentials in environment variables
+- Never commit `.env` to version control
+- Use different email accounts for production/staging
+
+### File Upload Security
+- Validate file types (images only: JPG, PNG, GIF)
+- Set maximum file size limits (5MB recommended)
+- Store uploads outside web root when possible
+- Regularly clean up old uploads
+
+## Maintenance Guide
+
+### Database Backups
+```bash
+# SQLite backup
+cp db.sqlite3 db.sqlite3.backup
+
+# PostgreSQL backup
+pg_dump your_database > backup.sql
+
+# Restore PostgreSQL
+psql your_database < backup.sql
+```
+
+### Regular Updates
+```bash
+# Update Django
+pip install --upgrade Django
+
+# Check for security updates
+pip list --outdated
+
+# Run migrations after updates
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Log Monitoring
+```bash
+# View Django logs
+tail -f logs/django.log
+
+# Check for errors
+grep "ERROR" logs/django.log
+```
+
+### Performance Optimization
+- Enable static file compression (WhiteNoise)
+- Use PostgreSQL indexes for frequently queried fields
+- Implement caching with Redis
+- Optimize database queries with `select_related()` and `prefetch_related()`
+- Use Django Debug Toolbar in development to identify slow queries
+
+### Monitoring
+- Set up error tracking with Sentry
+- Monitor server resources (CPU, memory, disk)
+- Track application performance metrics
+- Set up uptime monitoring (UptimeRobot, Pingdom)
+
+## License
 
 ## Support
 
