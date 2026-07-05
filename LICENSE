@@ -1,0 +1,48 @@
+MIT License
+
+Copyright (c) 2026 AlumniConnect
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Dependent packages and their licenses:
+
+- Django (https://www.djangoproject.com/) - BSD License
+- Django Channels (https://channels.readthedocs.io/) - BSD License
+- Django REST Framework (https://www.django-rest-framework.io/) - BSD License
+- Channels Redis (https://github.com/django/channels_redis) - BSD License
+- Bootstrap 5 (https://getbootstrap.com/) - MIT License
+- Font Awesome (https://fontawesome.com/) - SIL OFL 1.1 License
+- Pillow (https://pillow.readthedocs.io/) - HPND License
+- Redis (https://redis.io/) - BSD License
+- Gunicorn (https://gunicorn.org/) - MIT License
+- Daphne (https://github.com/django/daphne) - BSD License
+- Cloudinary (https://cloudinary.com/) - MIT License
+- Requests (https://requests.readthedocs.io/) - Apache License 2.0
+- urllib3 (https://urllib3.readthedocs.io/) - MIT License
+- sqlparse (https://github.com/andialbrecht/sqlparse) - BSD License
+- tzdata (https://github.com/python/tzdata) - MIT License
+- packaging (https://packaging.pypa.io/) - Apache License 2.0 / BSD License
+- certifi (https://certifi.io/) - MPL 2.0
+- charset-normalizer (https://github.com/Ousret/charset_normalizer) - MIT License
+- msgpack (https://msgpack.org/) - Apache License 2.0
+- six (https://github.com/benjaminp/six) - MIT License
+
+Please refer to each package's official repository or PyPI page for the most up-to-date license information.
