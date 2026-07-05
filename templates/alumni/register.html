@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Register - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-graduation-cap mb-2" style="font-size:3rem; color: #901d78;"></i>
+                    <h3>Join {{ SITE_NAME }}</h3>
+                    <p class="text-muted">Fill in your details to join the directory</p>
+                </div>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" value="{{ form.first_name.value|default:'' }}" required>
+                            {% for error in form.first_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}" required>
+                            {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone *</label>
+                            <input type="tel" name="phone" class="form-control {% if form.phone.errors %}is-invalid{% endif %}" value="{{ form.phone.value|default:'' }}" placeholder="+91 XXXXXXXXXX" required>
+                            {% for error in form.phone.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department *</label>
+                            <select name="department" class="form-select {% if form.department.errors %}is-invalid{% endif %}" required>
+                                <option value="">Select Department</option>
+                                {% for code, name in departments %}
+                                <option value="{{ code }}" {% if form.department.value|default:'' == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% for error in form.department.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Year of Passing *</label>
+                            <input type="number" name="year_of_passing" class="form-control {% if form.year_of_passing.errors %}is-invalid{% endif %}" value="{{ form.year_of_passing.value|default:'' }}" min="1970" max="{{ now|date:'Y' }}" required>
+                            {% for error in form.year_of_passing.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Company</label>
+                            <input type="text" name="current_company" class="form-control" value="{{ form.current_company.value|default:'' }}" placeholder="e.g., Google">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Role</label>
+                            <input type="text" name="current_role" class="form-control" value="{{ form.current_role.value|default:'' }}" placeholder="e.g., Software Engineer">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current City</label>
+                            <input type="text" name="current_city" class="form-control" value="{{ form.current_city.value|default:'' }}" placeholder="e.g., Chennai">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Native Location</label>
+                            <input type="text" name="native_location" class="form-control" value="{{ form.native_location.value|default:'' }}" placeholder="e.g., Villupuram, Tamil Nadu">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Support Mode</label>
+                            <select name="support_mode" class="form-select">
+                                <option value="">Select support mode</option>
+                                {% for value, label in support_mode_choices %}
+                                <option value="{{ value }}" {% if form.support_mode.value|default:'' == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted d-block mt-1">How are you available to support batchmates?</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Visit Frequency to Coimbatore</label>
+                            <select name="visit_frequency_coimbatore" class="form-select">
+                                <option value="">Select frequency</option>
+                                {% for value, label in visit_freq_choices %}
+                                <option value="{{ value }}" {% if form.visit_frequency_coimbatore.value|default:'' == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Free to Talk Days</label>
+                            <input type="text" name="free_to_talk_days" class="form-control" value="{{ form.free_to_talk_days.value|default:'' }}" placeholder="e.g., Weekends, Monday-Friday evenings">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="willing_to_mentor" class="form-check-input" id="willing_to_mentor" {% if form.willing_to_mentor.value %}checked{% endif %}>
+                                <label class="form-check-label" for="willing_to_mentor">Willing to associate and support batchmates through networks</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Support You Can Offer (experience, networks, market, etc.)</label>
+                            <textarea name="support_offered" class="form-control" rows="3" placeholder="e.g., Hiring in IT, connections in manufacturing, startup mentorship...">{{ form.support_offered.value|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Profile Photo</label>
+                            <input type="file" name="profile_photo" class="form-control" accept="image/*">
+                            <small class="text-muted d-block mt-1">Max 5MB. JPG, PNG, or GIF. Optional — placeholder used if empty.</small>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-pcet btn-lg px-5"><i class="fas fa-user-plus"></i> Register</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <small class="text-muted">Already in the directory? <a href="{% url 'directory' %}">Browse the directory</a></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

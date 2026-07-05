@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Chat - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="fas fa-comments"></i> Chats</h5>
+                    <button class="btn btn-pcet btn-sm" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                        <i class="fas fa-plus"></i> New
+                    </button>
+                </div>
+                <div style="max-height: 70vh; overflow-y: auto;">
+                    {% for room in rooms %}
+                    <a href="{% url 'chat_room' room.id %}" class="text-decoration-none">
+                        <div class="p-3 border-bottom" style="cursor:pointer;">
+                            <div class="d-flex">
+                                <div class="flex-grow-1">
+                                    <strong>{{ room.name|default:room.other_member.get_full_name|default:room.members.first.get_full_name|default:"Unknown" }}</strong>
+                                    {% if room.room_type == 'group' %}
+                                    <span class="badge bg-info ms-2">Group</span>
+                                    {% endif %}
+                                    {% if room.latest_message %}
+                                    <p class="small text-muted mb-0">{{ room.latest_message.content|truncatewords:5 }}</p>
+                                    <small class="text-muted ms-2 align-self-start">{{ room.latest_message.created_at|timesince }} ago</small>
+                                    {% else %}
+                                    <p class="small text-muted mb-0">No messages yet</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No chats yet. Start a conversation!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-4 text-center">
+                <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                <h4>Select a chat to start messaging</h4>
+                <p class="text-muted">Choose from your existing chats or create a new one.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal fade" id="newChatModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Chat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="nav nav-tabs mb-3" role="tablist">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#directTab">Direct Message</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#groupTab">Group Chat</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="directTab">
+                        <p class="text-muted">Click the Message button on any alumni's profile to start a direct chat.</p>
+                        <a href="{% url 'directory' %}" class="btn btn-pcet-outline btn-sm">Browse Alumni</a>
+                    </div>
+                    <div class="tab-pane fade" id="groupTab">
+                        <form method="POST" action="{% url 'create_group_chat' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Group Name</label>
+                                <input type="text" name="name" class="form-control" required placeholder="e.g., Mech Batch 2015">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea name="description" class="form-control" rows="2" placeholder="What's this group about?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-pcet w-100"><i class="fas fa-users"></i> Create Group</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /directory/
+Allow: /register/
+Disallow: /admin/
+Disallow: /directory/*/edit/
+Disallow: /media/
+
+Sitemap: https://pcetconnect.pythonanywhere.com/sitemap.xml

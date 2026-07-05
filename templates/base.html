@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+    {% load static %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <style>
+        :root {
+            --site-primary-color: {{ SITE_PRIMARY_COLOR|default:'#901d78' }};
+            --site-secondary-color: {{ SITE_SECONDARY_COLOR|default:'#7a1866' }};
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/alumni.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-graduation-cap me-2" style="font-size:1.5rem;"></i>{{ SITE_NAME }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'directory' %}"><i class="fas fa-users"></i> Directory</a></li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><span class="nav-link text-warning">Welcome, {{ user.get_full_name|default:user.email }}</span></li>
+                    <li class="nav-item"><a class="nav-link btn-pcet-outline px-3 rounded-pill" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link btn-pcet px-3 rounded-pill" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                    <li class="nav-item"><a class="nav-link btn-pcet-outline px-3 rounded-pill" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-pcet alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h5><i class="fas fa-graduation-cap"></i> {{ SITE_NAME }}</h5>
+                    <p class="small">Connecting alumni worldwide.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'directory' %}">Alumni Directory</a></li>
+                        <li><a href="{% url 'register' %}">Register</a></li>
+                        {% if user.is_staff %}
+                        <li><a href="{% url 'admin:index' %}" style="color:#ffd700;"><i class="fas fa-cog"></i> Admin Panel</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Support</h5>
+                    <p class="small">
+                        <i class="fas fa-envelope" style="color: var(--site-primary-color, #901d78);"></i>
+                        <a href="mailto:info@alumniconnect.org" class="text-white text-decoration-none">info@alumniconnect.org</a><br><br>
+                        <i class="fas fa-globe" style="color: var(--site-primary-color, #901d78);"></i>
+                        <a href="https://{{ SITE_NAME|lower }}.com" target="_blank" class="text-white text-decoration-none">{{ SITE_NAME }} Official Site</a>
+                    </p>
+                </div>
+            </div>
+            <hr>
+            <p class="text-center small mb-1" style="color: #fff;"><i class="fas fa-info-circle"></i> This is an alumni-run platform and is not officially maintained by any educational institution.</p>
+            <p class="text-center small mb-0">&copy; {% now "Y" %} {{ SITE_NAME }}. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

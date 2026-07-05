@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h4 class="mb-4"><i class="fas fa-edit"></i> Edit Profile</h4>
+                <p class="text-muted">Type your email below to verify ownership, then update your details.</p>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% if profile.email %}
+                    <div class="mb-3">
+                        <label class="form-label">Your Email (for verification)</label>
+                        <input type="email" name="email" class="form-control" value="{{ profile.email }}" readonly>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:profile.first_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:profile.last_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone *</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ form.phone.value|default:profile.phone }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department *</label>
+                            <select name="department" class="form-select" required>
+                                {% for code, name in departments %}
+                                <option value="{{ code }}" {% if form.department.value|default:profile.department == code %}selected{% endif %}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Year of Passing *</label>
+                            <input type="number" name="year_of_passing" class="form-control" value="{{ form.year_of_passing.value|default:profile.year_of_passing }}" min="1970" max="{{ now|date:'Y' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Company</label>
+                            <input type="text" name="current_company" class="form-control" value="{{ form.current_company.value|default:profile.current_company }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Role</label>
+                            <input type="text" name="current_role" class="form-control" value="{{ form.current_role.value|default:profile.current_role }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current City</label>
+                            <input type="text" name="current_city" class="form-control" value="{{ form.current_city.value|default:profile.current_city }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Native Location</label>
+                            <input type="text" name="native_location" class="form-control" value="{{ form.native_location.value|default:profile.native_location }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Support Mode</label>
+                            <select name="support_mode" class="form-select">
+                                <option value="">Select support mode</option>
+                                {% for value, label in support_mode_choices %}
+                                <option value="{{ value }}" {% if form.support_mode.value|default:profile.support_mode == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted d-block mt-1">How are you available to support batchmates?</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Visit Frequency to Coimbatore</label>
+                            <select name="visit_frequency_coimbatore" class="form-select">
+                                <option value="">Select frequency</option>
+                                {% for value, label in visit_freq_choices %}
+                                <option value="{{ value }}" {% if form.visit_frequency_coimbatore.value|default:profile.visit_frequency_coimbatore == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Free to Talk Days</label>
+                            <input type="text" name="free_to_talk_days" class="form-control" value="{{ form.free_to_talk_days.value|default:profile.free_to_talk_days }}" placeholder="e.g., Weekends, Monday-Friday evenings">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="willing_to_mentor" class="form-check-input" id="willing_to_mentor" {% if form.willing_to_mentor.value|default:profile.willing_to_mentor %}checked{% endif %}>
+                                <label class="form-check-label" for="willing_to_mentor">Willing to associate and support batchmates through networks</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Support You Can Offer (experience, networks, market, etc.)</label>
+                            <textarea name="support_offered" class="form-control" rows="3">{{ form.support_offered.value|default:profile.support_offered }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Profile Photo</label>
+                            <input type="file" name="profile_photo" class="form-control" accept="image/*">
+                            <small class="text-muted d-block mt-1">Max 5MB. JPG, PNG, or GIF. Leave empty to keep current photo.</small>
+                            {% if profile.profile_photo %}
+                            <small class="text-muted d-block">Current: {{ profile.profile_photo.name }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-pcet btn-lg px-5"><i class="fas fa-save"></i> Save Changes</button>
+                        <a href="{% url 'view_profile' profile.id %}" class="btn btn-outline-secondary btn-lg px-4 ms-2"><i class="fas fa-times"></i> Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

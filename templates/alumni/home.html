@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{{ SITE_NAME }} - Home{% endblock %}
+{% block content %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3">Welcome to {{ SITE_NAME }}</h1>
+        <p class="lead mb-4">Connect with fellow alumni worldwide</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4"><i class="fas fa-user-plus"></i> Join Directory</a>
+            <a href="{% url 'directory' %}" class="btn btn-outline-light btn-lg px-4"><i class="fas fa-users"></i> Browse Directory</a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 p-4 text-center">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-purple mb-3" style="color: var(--pcet-primary)"></i>
+                    <h5>Alumni Directory</h5>
+                    <p class="text-muted">Browse and connect with fellow alumni by department and year.</p>
+                    <a href="{% url 'directory' %}" class="btn btn-pcet-outline">Browse Directory</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 text-center">
+                <div class="card-body">
+                    <i class="fas fa-graduation-cap fa-3x text-purple mb-3" style="color: var(--pcet-primary)"></i>
+                    <h5>Join the Network</h5>
+                    <p class="text-muted">Register once and be part of the alumni community forever.</p>
+                    <a href="{% url 'register' %}" class="btn btn-pcet">Register Now</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 p-4 text-center">
+                <div class="card-body">
+                    <i class="fas fa-handshake fa-3x text-purple mb-3" style="color: var(--pcet-primary)"></i>
+                    <h5>Stay Connected</h5>
+                    <p class="text-muted">Find classmates, share opportunities, and stay in touch with your batch.</p>
+                    <a href="{% url 'directory' %}" class="btn btn-pcet-outline">Find Classmates</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if recent_alumni %}
+    <div class="mt-5">
+        <h3 class="text-center mb-4"><i class="fas fa-user-graduate"></i> Recent Alumni</h3>
+        <div class="row g-4">
+            {% for profile in recent_alumni %}{% if profile.first_name != 'PCET' %}
+            <div class="col-md-4 col-lg-2">
+                <a href="{% url 'view_profile' profile.id %}" class="text-decoration-none" style="color:inherit;">
+                <div class="card text-center p-3" style="cursor:pointer;">
+                    <div class="card-body">
+                        {% if profile.profile_photo %}
+                        <img src="{{ profile.profile_photo.url }}" alt="{{ profile.full_name }}" class="rounded-circle mb-2" style="width:60px;height:60px;object-fit:cover;">
+                        {% else %}
+                        <div class="profile-photo-sm bg-secondary mx-auto mb-2 d-flex align-items-center justify-content-center text-white rounded-circle" style="width:60px;height:60px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <h6 class="mb-1" style="font-size:0.85rem;">{{ profile.first_name }} {{ profile.last_name }}</h6>
+                        <small class="text-muted" style="font-size:0.75rem;">{{ profile.department }} Batch '{{ profile.year_of_passing|slice:":2" }}</small>
+                    </div>
+                </div>
+                </a>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

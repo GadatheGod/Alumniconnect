@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <span class="badge badge-pcet mb-3">{{ event.get_event_type_display }}</span>
+                <h3>{{ event.title }}</h3>
+                <p class="text-muted mb-3">
+                    <i class="fas fa-calendar"></i> {{ event.date|date:'d M Y, h:i A' }}
+                    {% if event.location %}&middot; <i class="fas fa-map-marker-alt"></i> {{ event.location }}{% endif %}
+                </p>
+                <hr>
+                <h5>About this Event</h5>
+                <p>{{ event.description|linebreaks }}</p>
+                <hr>
+                {% if user.is_authenticated %}
+                <div class="text-center">
+                    {% if user_rsvp %}
+                        {% if user_rsvp.status == 'confirmed' %}
+                        <form method="POST" action="{% url 'event_rsvp' event.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger"><i class="fas fa-times-circle"></i> Cancel RSVP</button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{% url 'event_rsvp' event.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-pcet"><i class="fas fa-check-circle"></i> Confirm Attendance</button>
+                        </form>
+                        {% endif %}
+                    {% else %}
+                    {% if not event.is_past %}
+                    <form method="POST" action="{% url 'event_rsvp' event.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-pcet btn-lg"><i class="fas fa-check-circle"></i> RSVP Now</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted">This event has passed.</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center">
+                    <a href="{% url 'login' %}" class="btn btn-pcet"><i class="fas fa-sign-in-alt"></i> Login to RSVP</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 mb-3">
+                <h6>Event Details</h6>
+                <p><strong>Date:</strong> {{ event.date|date:'d M Y, h:i A' }}</p>
+                {% if event.location %}<p><strong>Location:</strong> {{ event.location }}</p>{% endif %}
+                <p><strong>Organizer:</strong> {{ event.organizer_name }}</p>
+                {% if event.max_attendees > 0 %}
+                <p><strong>Available Slots:</strong> {{ event.available_slots }} / {{ event.max_attendees }}</p>
+                {% endif %}
+                <p><strong>Organizer Email:</strong> {{ event.organizer_email|default:"N/A" }}</p>
+            </div>
+            {% if rsvps %}
+            <div class="card p-3">
+                <h6>Attendees ({{ rsvps.count }})</h6>
+                {% for r in rsvps|slice:":10" %}
+                <div class="d-flex align-items-center mb-2">
+                    <div class="profile-photo-sm bg-secondary me-2 d-flex align-items-center justify-content-center text-white" style="width:30px;height:30px;font-size:12px;">
+                        {{ r.user.first_name|make_list|first|upper|default:"U" }}
+                    </div>
+                    <small>{{ r.user.get_full_name|default:r.user.username }}</small>
+                </div>
+                {% endfor %}
+                {% if rsvps.count > 10 %}
+                <p class="text-muted small">...and {{ rsvps.count|add:"-10" }} more</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            <a href="{% url 'event_list' %}" class="btn btn-pcet-outline btn-sm w-100 mt-3"><i class="fas fa-arrow-left"></i> Back to Events</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

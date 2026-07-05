@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Create Event - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card p-4">
+                <h4 class="mb-4"><i class="fas fa-calendar-plus"></i> Create Event</h4>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Event Type *</label>
+                            <select name="event_type" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="reunion">Batch Reunion</option>
+                                <option value="webinar">Webinar</option>
+                                <option value="meetup">Meetup</option>
+                                <option value="guest_lecture">Guest Lecture</option>
+                                <option value="alumni_day">Alumni Day</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Event Title *</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date & Time *</label>
+                            <input type="datetime-local" name="date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="Address or online link">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Organizer Name *</label>
+                            <input type="text" name="organizer_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Organizer Email</label>
+                            <input type="email" name="organizer_email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Max Attendees (0 = unlimited)</label>
+                            <input type="number" name="max_attendees" class="form-control" min="0" value="0">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Description *</label>
+                            <textarea name="description" class="form-control" rows="5" required placeholder="Describe the event, agenda, and any important details..."></textarea>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-pcet btn-lg px-5"><i class="fas fa-calendar-plus"></i> Create Event</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

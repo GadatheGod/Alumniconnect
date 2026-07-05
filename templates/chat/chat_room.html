@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}{{ room.name|default:"Chat" }} - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--pcet-primary); color: white;">
+                    <div>
+                        <h5 class="mb-0">{{ room.name|default:"Chat" }}</h5>
+                        {% if room.room_type == 'group' %}
+                        <small>{{ room.members.count }} members</small>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="wsStatus" class="badge bg-danger"><i class="fas fa-circle fa-xs"></i> Offline</span>
+                        <a href="{% url 'chat_list' %}" class="btn btn-sm btn-outline-light"><i class="fas fa-arrow-left"></i> Back</a>
+                    </div>
+                </div>
+                <div class="card-body" style="height: 60vh; overflow-y: auto; background: #f0f2f5;" id="chatMessages">
+                    {% for msg in messages %}
+                    <div class="message-bubble {% if msg.sender == user %}message-sent{% else %}message-received{% endif %}">
+                        {% if msg.sender != user %}
+                        <small class="d-block mb-1" style="opacity:0.8;">{{ msg.sender.get_full_name|default:msg.sender.username }}</small>
+                        {% endif %}
+                        {{ msg.content }}
+                        <small class="d-block mt-1" style="font-size:10px; opacity:0.7;">
+                            {{ msg.created_at|date:"h:i A" }}
+                        </small>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <form id="chatForm" class="d-flex">
+                        <input type="text" id="messageInput" class="form-control me-2" placeholder="Type a message..." autocomplete="off">
+                        <button type="submit" class="btn btn-pcet"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const room_id = {{ room.id }};
+const ws = new WebSocket('ws://' + window.location.host + '/ws/chat/room/' + room_id + '/');
+
+function updateStatus(connected) {
+    const badge = document.getElementById('wsStatus');
+    if (badge) {
+        badge.className = connected ? 'badge bg-success' : 'badge bg-danger';
+        badge.innerHTML = connected ? '<i class="fas fa-circle fa-xs"></i> Online' : '<i class="fas fa-circle fa-xs"></i> Offline';
+    }
+}
+
+ws.onopen = function() {
+    updateStatus(true);
+    console.log('WebSocket connected');
+};
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'message') {
+        addMessage(data);
+    }
+};
+
+let reconnectAttempts = 0;
+const maxReconnectAttempts = 5;
+
+ws.onclose = function() {
+    console.log('WebSocket closed.');
+    updateStatus(false);
+    if (reconnectAttempts < maxReconnectAttempts) {
+        reconnectAttempts++;
+        setTimeout(() => {
+            console.log(`Reconnecting... attempt ${reconnectAttempts}`);
+            window.location.reload();
+        }, 3000 * reconnectAttempts);
+    }
+};
+
+ws.onerror = function(error) {
+    console.error('WebSocket error:', error);
+};
+
+function addMessage(data) {
+    const chatMessages = document.getElementById('chatMessages');
+    const isSent = data.sender_id == {{ user.id }};
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble ' + (isSent ? 'message-sent' : 'message-received');
+    bubble.innerHTML = `
+        ${!isSent ? '<small class="d-block mb-1" style="opacity:0.8;">' + data.sender_name + '</small>' : ''}
+        ${data.content}
+        <small class="d-block mt-1" style="font-size:10px; opacity:0.7;">${formatTime(data.timestamp)}</small>
+    `;
+    chatMessages.appendChild(bubble);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function formatTime(isoString) {
+    const d = new Date(isoString);
+    return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const input = document.getElementById('messageInput');
+    const content = input.value.trim();
+    if (content) {
+        ws.send(JSON.stringify({type: 'send_message', content: content}));
+        input.value = '';
+    }
+});
+
+// Scroll to bottom on load
+const chatMessages = document.getElementById('chatMessages');
+chatMessages.scrollTop = chatMessages.scrollHeight;
+</script>
+{% endblock %}
